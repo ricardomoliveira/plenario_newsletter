@@ -69,7 +69,7 @@ def send_email(api_key, sender_email, recipients, subject, body):
 
     # Set mail_from, mail_to, subject, HTML content
     mailer.set_mail_from(mail_from, mail_body)
-    mailer.set_mail_to(recipients_list, mail_body)
+    mailer.set_mail_bcc(recipients_list, mail_body)
     mailer.set_subject(subject, mail_body)
     mailer.set_html_content(body, mail_body)
 
