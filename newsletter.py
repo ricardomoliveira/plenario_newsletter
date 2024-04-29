@@ -23,7 +23,7 @@ def main():
 
     # Send email
     response = send_email(mailersend_api_key, mailersend_api_email, recipients, subject, body)
-    if response == 200:
+    if response == 202:
         print("Email sent successfully.")
     else:
         print(f"Failed to send email: {response}")
