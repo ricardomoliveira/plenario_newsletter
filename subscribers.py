@@ -56,6 +56,7 @@ def send_email(api_key, sender_email, recipients, subject, body):
     # Define mail_from dictionary
     mail_from = {
         "email": sender_email,
+        "name": 'Plenário | Inteligência Política'
     }
 
     # Define recipients list
