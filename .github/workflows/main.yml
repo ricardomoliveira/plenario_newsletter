@@ -27,4 +27,4 @@ jobs:
           MAILERSEND_API_KEY: ${{ secrets.MAILERSEND_API_KEY }}
           MAILERSEND_API_EMAIL: ${{ secrets.MAILERSEND_API_EMAIL }}
           HUBSPOT_ACCESS_TOKEN: ${{ secrets.HUBSPOT_ACCESS_TOKEN }}
-        run: python send_newsletter.py  # Replace with the command to run your newsletter script
+        run: python newsletter.py  # Replace with the command to run your newsletter script
