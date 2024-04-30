@@ -56,7 +56,7 @@ def generate_email_html():
         dr_html += "<p>Sem atualizações</p>"
     else:
         for item in dr_items:
-            dr_html += "<p>{}<br><a href='{}'>Ler mais</a></p>".format(item["description"], item["link"])
+            dr_html += "<p>{}<br><a href='{}'>Ler mais</a></p>".format(item["title"], item["link"])
 
     # Generate HTML content for Gov items
     gov_html = ""
