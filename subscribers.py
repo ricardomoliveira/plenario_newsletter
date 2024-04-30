@@ -49,34 +49,41 @@ def get_subscription_list():
         print(f'Failed to get subscription list from HubSpot: {response.text}')
         return []
 
-def send_email(api_key, sender_email, recipients, subject, body):
-    # Initialize a NewEmail instance with your API key
-    mailer = emails.NewEmail(api_key)
+def send_email(api_key, sender_email, bcc_recipients, subject, body):
+    try:
+        # Initialize a NewEmail instance with your API key
+        mailer = emails.NewEmail(api_key)
 
-    # Define mail_from dictionary
-    mail_from = {
-        "email": 'newsletter@plenario.pt',
-        "name": 'Plenário | Inteligência Política'
-    }
+        # Define mail_from dictionary
+        mail_from = {
+            "email": sender_email,
+            "name": "Your Name"  # Replace with sender's name if needed
+        }
 
-    # Define recipients list
-    recipients_list = []
-    for recipient in recipients:
-        recipients_list.append({"email": recipient})
+        # Define an empty dictionary to populate with mail values
+        mail_body = {}
 
-    # Define an empty dictionary to populate with mail values
-    mail_body = {}
+        # Set mail_from, subject, HTML content
+        mailer.set_mail_from(mail_from, mail_body)
+        mailer.set_subject(subject, mail_body)
+        mailer.set_html_content(body, mail_body)
 
-    # Set mail_from, mail_to, subject, HTML content
-    mailer.set_mail_from(mail_from, mail_body)
-    mailer.set_mail_bcc(recipients_list, mail_body)
-    mailer.set_subject(subject, mail_body)
-    mailer.set_html_content(body, mail_body)
+        # Send separate emails to each BCC recipient
+        for recipient in bcc_recipients:
+            # Define BCC recipient
+            mail_to = {"email": recipient}
 
-    # Send the email
-    response = mailer.send(mail_body)
-    print(response)
-    return response
+            # Set mail_to
+            mailer.set_mail_to([mail_to], mail_body)
+
+            # Send the email
+            response = mailer.send(mail_body)
+            print(response)
+
+        return True  # Indicate success
+    except Exception as e:
+        print(f"An error occurred while sending email: {str(e)}")
+        return False  # Indicate failure
 
 # Test the functions
 if __name__ == "__main__":
