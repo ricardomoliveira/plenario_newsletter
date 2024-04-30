@@ -18,7 +18,7 @@ def generate_email_html():
     # Fetch new items from RSS feeds
     dr_items, gov_items, sns_items, infarmed_items = rssfeed.main()
 
-    sns_count = len(sns_items)
+    news_count = len(sns_items) + len(infarmed_items)
     dr_count = len(dr_items)
     gov_count = len(gov_items)
     infarmed_count = len(infarmed_items)
@@ -32,7 +32,7 @@ def generate_email_html():
             Bom dia, as atualizações do dia incluem:
             <li><b>{dr_count}</b> publicações em Diário da República</li>
             <li><b>{gov_count}</b> comunicados do Governo</li>
-            <li><b>{sns_count}</b> artigos da DGS, SNS e Infarmed</li>
+            <li><b>{news_count}</b> artigos da DGS, SNS e Infarmed</li>
             <p>Tempo estimado de leitura: <b>{reading_time_minutes} minutos</b></p>
         """
 
