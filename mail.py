@@ -24,7 +24,7 @@ def generate_email_html():
     infarmed_count = len(infarmed_items)
 
     # Estimate the reading time
-    total_articles = sns_count + dr_count + gov_count + infarmed_count
+    total_articles = news_count + dr_count + gov_count + infarmed_count
     reading_time_minutes = total_articles * 2  # Assuming 2 minutes per article
 
     # Summary content
