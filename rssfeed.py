@@ -2,8 +2,12 @@ from datetime import datetime, timedelta
 import feedparser
 import ssl
 from bs4 import BeautifulSoup
+import pytz
 
 ssl._create_default_https_context = ssl._create_unverified_context
+
+# Define the UTC timezone
+UTC = pytz.utc
 
 # Define the UTC offset for 8 am
 UTC_OFFSET = timedelta(hours=8)
@@ -26,11 +30,11 @@ GOV_FEED = ['https://rssproxy.migor.org/api/w2f?v=0.1&url=https%3A%2F%2Fwww.port
 
 def fetch_new_items(rss_feed_urls):
     rss_items = []
-    current_date = datetime.now().date()
+    current_date = datetime.now(UTC).date()
     previous_date = current_date - timedelta(days=1)
 
     # Calculate the datetime for 8 am UTC of the previous day
-    previous_day_8am_utc = datetime.combine(previous_date, datetime.min.time()) + UTC_OFFSET
+    previous_day_8am_utc = datetime.combine(previous_date, datetime.min.time()).replace(tzinfo=UTC) + UTC_OFFSET
 
     # Iterate over each RSS feed URL
     for rss_feed_url in rss_feed_urls:
@@ -42,10 +46,11 @@ def fetch_new_items(rss_feed_urls):
             for item in feed.entries:
                 if "sns" in rss_feed_url or "infarmed" in rss_feed_url:
                     # Parse the publication date of the item
-                    pub_date = datetime.strptime(item.published, "%Y-%m-%dT%H:%M:%S%z").date()
+                    pub_date = datetime.strptime(item.published, "%Y-%m-%dT%H:%M:%S%z").astimezone(UTC).date()
 
                     # Check if the item is from the previous day after 8 am UTC
-                    if pub_date == previous_date and datetime.strptime(item.published, "%Y-%m-%dT%H:%M:%S%z") > previous_day_8am_utc:
+                    item_datetime = datetime.strptime(item.published, "%Y-%m-%dT%H:%M:%S%z").astimezone(UTC)
+                    if pub_date >= previous_date and item_datetime >= previous_day_8am_utc:
                         # Extract relevant information from the item
                         title = item.title
                         link = item.link
@@ -58,9 +63,10 @@ def fetch_new_items(rss_feed_urls):
                     date_tag = soup.find('div', class_='dateItem')
                     if date_tag:
                         date_str = date_tag.text.strip()
-                        pub_date = datetime.strptime(date_str, '%Y-%m-%d às %Hh%M').date()
+                        pub_date = datetime.strptime(date_str, '%Y-%m-%d às %Hh%M').astimezone(UTC).date()
                         # Check if the item is from the previous day after 8 am UTC
-                        if pub_date == previous_date and datetime.strptime(date_str, '%Y-%m-%d às %Hh%M') > previous_day_8am_utc:
+                        item_datetime = datetime.strptime(date_str, '%Y-%m-%d às %Hh%M').astimezone(UTC)
+                        if pub_date >= previous_date and item_datetime >= previous_day_8am_utc:
                             # Extract relevant information from the item
                             title = item.title
                             link = item.link
@@ -68,11 +74,15 @@ def fetch_new_items(rss_feed_urls):
                             rss_items.append({"title": title, "link": link, "pubDate": pub_date})
                 else:
                     # Extract relevant information from the item
-                    title = item.title
-                    #description = item.description
+                    if rss_feed_url in DR_FEED:
+                        # For DR items, use the description as the title
+                        description = item.description
+                        title = BeautifulSoup(description, 'html.parser').text
+                    else:
+                        title = item.title
                     link = item.link
-                    # Add the item to the list of new items
-                    if "Saúde" in title or "saúde" in title:
+                    if "Saúde" in description or "saúde" in description:
+                        # Add the item to the list of new items
                         rss_items.append({"title": title, "link": link})
 
         except Exception as e:
@@ -85,6 +95,7 @@ def main():
     sns_items = fetch_new_items(SNS_FEED)
     dr_items = fetch_new_items(DR_FEED)
     infarmed_items = fetch_new_items(INFARMED_FEED)
+    print(gov_items, sns_items, dr_items, infarmed_items)
     return dr_items, gov_items, sns_items, infarmed_items
 
 if __name__ == "__main__":
