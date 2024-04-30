@@ -48,7 +48,7 @@ def generate_email_html():
         for item in sns_items:
             sns_html += "<p><a href='{}'>{}</a></p>".format(item["link"], item["title"])
         for item in infarmed_items:
-            sns_html += "<p><strong>{}</strong><br><a href='{}'>Ler mais</a></p>".format(item["title"], item["link"])
+            sns_html += "<p><a href='{}'>{}</a></p>".format(item["link"], item["title"])
 
     # Generate HTML content for DR items
     dr_html = ""
