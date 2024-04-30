@@ -57,7 +57,7 @@ def send_email(api_key, sender_email, bcc_recipients, subject, body):
         # Define mail_from dictionary
         mail_from = {
             "email": sender_email,
-            "name": "Your Name"  # Replace with sender's name if needed
+            "name": "Plenário | Inteligência Política"  # Replace with sender's name if needed
         }
 
         # Define an empty dictionary to populate with mail values
