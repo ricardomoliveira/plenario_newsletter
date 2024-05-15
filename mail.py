@@ -16,12 +16,11 @@ def get_formatted_date():
 
 def generate_email_html():
     # Fetch new items from RSS feeds
-    dr_items, gov_items, sns_items, infarmed_items = rssfeed.main()
+    dr_items, gov_items, sns_items, infarmed_items, dgs_items = rssfeed.main()
 
-    news_count = len(sns_items) + len(infarmed_items)
+    news_count = len(sns_items) + len(infarmed_items) + len(dgs_items)
     dr_count = len(dr_items)
     gov_count = len(gov_items)
-    infarmed_count = len(infarmed_items)
 
     # Estimate the reading time
     total_articles = news_count + dr_count + gov_count
@@ -29,10 +28,10 @@ def generate_email_html():
 
     # Summary content
     summary_content = f"""
-            Bom dia, as atualizações do dia incluem:
+            Bom dia, consulte hoje no relatório:
             <li><b>{dr_count}</b> publicações em Diário da República</li>
             <li><b>{gov_count}</b> comunicados do Governo</li>
-            <li><b>{news_count}</b> artigos da DGS, SNS e Infarmed</li>
+            <li><b>{news_count}</b> atualizações da DGS, SNS e Infarmed</li>
             <p>Tempo estimado de leitura: <b>{reading_time_minutes} minutos</b></p>
         """
 
@@ -42,12 +41,14 @@ def generate_email_html():
 
     # Generate HTML content for SNS items
     sns_html = ""
-    if len(sns_items) == 0 and len(infarmed_items) == 0:
+    if len(sns_items) == 0 and len(infarmed_items) == 0 and len(dgs_items) == 0:
         sns_html += "<p>Sem atualizações</p>"
     else:
         for item in sns_items:
             sns_html += "<p><a href='{}'>{}</a></p>".format(item["link"], item["title"])
         for item in infarmed_items:
+            sns_html += "<p><a href='{}'>{}</a></p>".format(item["link"], item["title"])
+        for item in dgs_items:
             sns_html += "<p><a href='{}'>{}</a></p>".format(item["link"], item["title"])
 
     # Generate HTML content for DR items
@@ -65,7 +66,6 @@ def generate_email_html():
     else:
         for item in gov_items:
             gov_html += "<p><a href='{}'>{}</a></p>".format(item["link"], item["title"])
-
 
     # Replace placeholders with actual content
     html_content = html_template.replace("{summary_content}", summary_content)
