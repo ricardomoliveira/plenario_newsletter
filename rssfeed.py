@@ -66,21 +66,33 @@ def fetch_new_items(rss_feed_urls):
                         date_str = date_tag.text.strip()
                         pub_date = datetime.strptime(date_str, '%Y-%m-%d às %Hh%M').astimezone(UTC).date()
                         item_datetime = datetime.strptime(date_str, '%Y-%m-%d às %Hh%M').astimezone(UTC)
+                        if date_tag:
+                            # Check if the item is from the previous day after 8 am UTC
+                            if pub_date >= previous_date and item_datetime >= previous_day_8am_utc:
+                                # Extract relevant information from the item
+                                title = item.title
+                                link = item.link
+                                # Add the item to the list of new items
+                                rss_items.append({"title": title, "link": link, "pubDate": pub_date})
                     elif rss_feed_url in DGS_FEED:
                         date_tag = soup.find('div', class_='register-date')
                         date_str = date_tag.text.strip()
                         pub_date = datetime.strptime(date_str, '%d-%m-%Y').date()
                         item_datetime = datetime.strptime(date_str, '%d-%m-%Y').replace(tzinfo=UTC)
+                        if date_tag:
+                            if pub_date >= previous_date:
+                                # Extract relevant information from the item
+                                title_tag = soup.find('h4', class_='register-title')
+                                if title_tag:
+                                    title = title_tag.get_text(strip=True)
+                                else:
+                                    title = item.title
+                                link = item.link
+                                # Add the item to the list of new items
+                                rss_items.append({"title": title, "link": link, "pubDate": pub_date})
                     else:
                         break
-                    if date_tag:
-                        # Check if the item is from the previous day after 8 am UTC
-                        if pub_date >= previous_date and item_datetime >= previous_day_8am_utc:
-                            # Extract relevant information from the item
-                            title = item.title
-                            link = item.link
-                            # Add the item to the list of new items
-                            rss_items.append({"title": title, "link": link, "pubDate": pub_date})
+
                 else:
                     # Extract relevant information from the item
                     if rss_feed_url in DR_FEED:
