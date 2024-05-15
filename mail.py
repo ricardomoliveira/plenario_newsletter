@@ -1,6 +1,10 @@
 from datetime import datetime
 import rssfeed
 
+def create_html_file(html_content, filename):
+    with open(filename, 'w') as file:
+        file.write(html_content)
+
 def get_formatted_date():
     # Get the current date
     current_date = datetime.now()
@@ -74,4 +78,7 @@ def generate_email_html():
     html_content = html_content.replace("{column3_content}", sns_html)
     html_content = html_content.replace("{datetime}", get_formatted_date())
 
+    create_html_file(html_content,'test.html')
     return html_content
+
+generate_email_html()
