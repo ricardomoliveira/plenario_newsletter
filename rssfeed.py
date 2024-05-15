@@ -19,6 +19,8 @@ DR_FEED = ['http://files.dre.pt/rss/serie1.xml',
 
 SNS_FEED = 'https://www.sns.gov.pt/noticias/feed/'
 
+DGS_FEED = ['https://rssproxy.migor.org/api/w2f?v=0.1&url=https%3A%2F%2Fwww.dgs.pt%2Fem-destaque.aspx&link=.%2Fh4%5B1%5D%2Fa%5B1%5D&context=%2F%2Fdiv%5B2%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B2%5D%2Fdiv%5B2%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv&re=none&out=atom']
+
 INFARMED_FEED = ['https://www.infarmed.pt/web/infarmed/rss-agenda/-/asset_publisher/p30dUPCgMZh6/rss?p_p_cacheability=cacheLevelFull',
                  'https://www.infarmed.pt/web/infarmed/rss-alertas/-/asset_publisher/grlvtkM7UJK8/rss?p_p_cacheability=cacheLevelFull&_101_INSTANCE_grlvtkM7UJK8_currentURL=%2Fweb%2Finfarmed%2Frss-alertas&_101_INSTANCE_grlvtkM7UJK8_currentURL=%2Fweb%2Finfarmed%2Frss-alertas&_101_INSTANCE_grlvtkM7UJK8_currentURL=%2Fweb%2Finfarmed%2Frss-alertas&_101_INSTANCE_grlvtkM7UJK8_portletAjaxable=1&_101_INSTANCE_grlvtkM7UJK8_portletAjaxable=1&_101_INSTANCE_grlvtkM7UJK8_portletAjaxable=1',
                  'https://www.infarmed.pt/web/infarmed/rss-comunicados-de-imprensa/-/asset_publisher/19JAuDBUnYuY/rss?p_p_cacheability=cacheLevelFull&_101_INSTANCE_19JAuDBUnYuY_currentURL=%2Fweb%2Finfarmed%2Frss-comunicados-de-imprensa&_101_INSTANCE_19JAuDBUnYuY_currentURL=%2Fweb%2Finfarmed%2Frss-comunicados-de-imprensa&_101_INSTANCE_19JAuDBUnYuY_currentURL=%2Fweb%2Finfarmed%2Frss-comunicados-de-imprensa&_101_INSTANCE_19JAuDBUnYuY_portletAjaxable=1&_101_INSTANCE_19JAuDBUnYuY_portletAjaxable=1&_101_INSTANCE_19JAuDBUnYuY_portletAjaxable=1',
@@ -41,7 +43,6 @@ def fetch_new_items(rss_feed_urls):
         try:
             # Parse the RSS feed
             feed = feedparser.parse(rss_feed_url)
-
             # Iterate over the items in the feed
             for item in feed.entries:
                 if "sns" in rss_feed_url or "infarmed" in rss_feed_url:
@@ -60,12 +61,20 @@ def fetch_new_items(rss_feed_urls):
                     # Parse the publication date of the item
                     html_content = item.content[0].value
                     soup = BeautifulSoup(html_content, 'html.parser')
-                    date_tag = soup.find('div', class_='dateItem')
-                    if date_tag:
+                    if rss_feed_url in GOV_FEED:
+                        date_tag = soup.find('div', class_='dateItem')
                         date_str = date_tag.text.strip()
                         pub_date = datetime.strptime(date_str, '%Y-%m-%d às %Hh%M').astimezone(UTC).date()
-                        # Check if the item is from the previous day after 8 am UTC
                         item_datetime = datetime.strptime(date_str, '%Y-%m-%d às %Hh%M').astimezone(UTC)
+                    elif rss_feed_url in DGS_FEED:
+                        date_tag = soup.find('div', class_='register-date')
+                        date_str = date_tag.text.strip()
+                        pub_date = datetime.strptime(date_str, '%d-%m-%Y').date()
+                        item_datetime = datetime.strptime(date_str, '%d-%m-%Y').replace(tzinfo=UTC)
+                    else:
+                        break
+                    if date_tag:
+                        # Check if the item is from the previous day after 8 am UTC
                         if pub_date >= previous_date and item_datetime >= previous_day_8am_utc:
                             # Extract relevant information from the item
                             title = item.title
@@ -95,8 +104,9 @@ def main():
     sns_items = fetch_new_items(SNS_FEED)
     dr_items = fetch_new_items(DR_FEED)
     infarmed_items = fetch_new_items(INFARMED_FEED)
-    print(gov_items, sns_items, dr_items, infarmed_items)
-    return dr_items, gov_items, sns_items, infarmed_items
+    dgs_items = fetch_new_items(DGS_FEED)
+    print(gov_items, sns_items, dr_items, infarmed_items, dgs_items)
+    return dr_items, gov_items, sns_items, infarmed_items, dgs_items
 
 if __name__ == "__main__":
     main()
