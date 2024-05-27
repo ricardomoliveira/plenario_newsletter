@@ -34,6 +34,8 @@ def fetch_new_items(rss_feed_urls):
     rss_items = []
     current_date = datetime.now(UTC).date()
     previous_date = current_date - timedelta(days=1)
+    if current_date.weekday() == 0:  # Monday
+           previous_date = current_date - timedelta(days=3)  # Friday
 
     # Calculate the datetime for 8 am UTC of the previous day
     previous_day_8am_utc = datetime.combine(previous_date, datetime.min.time()).replace(tzinfo=UTC) + UTC_OFFSET
